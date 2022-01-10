@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import {NavigationContext} from '@react-navigation/native';
 import {AsyncStorage} from 'react-native';
+// import {AsyncStorage} from 'react-native';
 
 const Context = createContext({});
 
@@ -37,16 +38,12 @@ const getData = async fn => {
 
 const searchYoutubeApi = async params => {
   try {
-    console.log('_________params___________', {
-      ...params,
-      // key: 'AIzaSyDMB1OjY4PgO_ObYu9KnyND9I-k4cW_qRU',
-      part: 'snippet',
-    });
     const res = await axios.get(
-      'https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDMB1OjY4PgO_ObYu9KnyND9I-k4cW_qRU',
+      'https://youtube.googleapis.com/youtube/v3/search',
       {
         params: {
           ...params,
+          key: 'AIzaSyDtqgw8f2dbgzIHIshuP9PTlhTI3Mjq6B4',
           part: 'snippet',
         },
       },
@@ -58,6 +55,7 @@ const searchYoutubeApi = async params => {
     return;
   }
 };
+
 export const SearchScreenProvider = ({children}) => {
   const [searchHistory, setSearchHistory] = useState([]);
   const [searchValue, setSearchValue] = useState('');
@@ -73,7 +71,6 @@ export const SearchScreenProvider = ({children}) => {
         newHistory?.splice(newHistory?.indexOf(val), 1);
       newHistory.push(val);
       console.log({newHistory});
-
       if (newHistory?.length > 20)
         newHistory = newHistory.splice(newHistory.length - 20, 20);
       storeData(newHistory);

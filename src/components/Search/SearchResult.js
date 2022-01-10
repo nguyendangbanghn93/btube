@@ -8,11 +8,13 @@ import {
   FlatList,
   TouchableOpacityComponent,
 } from 'react-native';
+import {Icon} from 'react-native-elements';
 import s from '~/static/style';
 import {useSearchContext} from '~contexts/searchContext';
-
+import md5 from 'react-native-md5';
+import axios from 'axios';
 const TypeBar = memo(({searchDataHandler, route}) => {
-  const types = ['All', 'Video', 'Channel', 'Playlist'];
+  const types = ['All', 'Video', 'Playlist'];
   return (
     <ScrollView horizontal style={[s.fdr, s.pa(10), s.bb(1), s.bbc('#ddd')]}>
       {types.map((t, i) => (
@@ -44,7 +46,7 @@ const TypeBar = memo(({searchDataHandler, route}) => {
     </ScrollView>
   );
 });
-const Result = memo(({searchResult, searchDataHandler, route}) => {
+const Result = memo(({searchResult, searchDataHandler, route, navigation}) => {
   return (
     <FlatList
       ListHeaderComponent={
@@ -67,20 +69,78 @@ const Result = memo(({searchResult, searchDataHandler, route}) => {
         );
       }}
       keyExtractor={(item, index) => {
-        item._id = JSON.stringify(item.id);
+        item._id = md5.str_md5(JSON.stringify(item));
       }}
       renderItem={({item, index}) => {
-        index === 1 && console.log(item?.snippet);
-
         return (
           <TouchableOpacity
+            onPress={async () => {
+              navigation.navigate('VideoScreen', {...item.id});
+            }}
             style={[s.fdr, s.pa(5), s.bg('#eee'), s.mb(15), s.shadow1]}>
-            <View style={[s.w('30%'), s.pa(5)]}>
-              <Image
-                style={[s.w('100%'), {aspectRatio: 1 / 1}]}
-                resizeMode="cover"
-                source={{uri: item?.snippet?.thumbnails?.medium?.url}}
-              />
+            <View style={[s.w('30%'), s.pa(5), s.por]}>
+              <View style={s.por}>
+                {item.id.kind === 'youtube#video' && (
+                  <View
+                    style={[
+                      s.poa,
+                      s.r0,
+                      s.t0,
+                      s.b0,
+                      s.l0,
+                      s.z(1),
+                      s.fdr,
+                      s.jcc,
+                      s.aic,
+                    ]}>
+                    <View
+                      style={[
+                        s.bg('#0000008a'),
+                        s.pa(10),
+                        s.bra(10),
+                        s.oh,
+                        s.bra(50),
+                      ]}>
+                      <Icon
+                        name="caretright"
+                        type="ant-design"
+                        size={16}
+                        color={'#fff'}
+                      />
+                    </View>
+                  </View>
+                )}
+                {item.id.kind === 'youtube#playlist' && (
+                  <View
+                    style={[
+                      s.poa,
+                      s.r0,
+                      s.t0,
+                      s.b0,
+                      s.z(1),
+                      s.fdr,
+                      s.jcc,
+                      s.aic,
+                      s.w('40%'),
+                      s.bg('#0000008a'),
+                    ]}>
+                    <Icon
+                      name="menu-fold"
+                      type="ant-design"
+                      size={16}
+                      color={'#fff'}
+                    />
+                  </View>
+                )}
+                {item.id.kind === 'youtube#channel' && (
+                  <Text style={[s.c('red')]}>channel</Text>
+                )}
+                <Image
+                  style={[s.w('100%'), {aspectRatio: 1 / 1}]}
+                  resizeMode="cover"
+                  source={{uri: item?.snippet?.thumbnails?.medium?.url}}
+                />
+              </View>
             </View>
             <View style={[s.w('70%'), s.pa(5)]}>
               <Text style={[s.fwb]} numberOfLines={2}>
@@ -98,7 +158,6 @@ const Result = memo(({searchResult, searchDataHandler, route}) => {
 });
 export default function SearchResult(props) {
   const {searchResult, searchDataHandler} = useSearchContext();
-
   return (
     <View>
       <TypeBar route={props.route} searchDataHandler={searchDataHandler} />
@@ -106,6 +165,7 @@ export default function SearchResult(props) {
         searchResult={searchResult}
         searchDataHandler={searchDataHandler}
         route={props.route}
+        navigation={props.navigation}
       />
     </View>
   );
